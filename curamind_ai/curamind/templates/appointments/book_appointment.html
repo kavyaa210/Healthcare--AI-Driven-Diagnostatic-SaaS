@@ -1,0 +1,180 @@
+{% extends 'base.html' %}
+
+{% block title %}Book Appointment{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 40px; max-width: 600px;">
+    <div class="card">
+        <h1 style="margin: 0 0 30px 0;">📅 Book an Appointment</h1>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- doctor selection dropdown -->
+            {% if doctors %}
+            <div style="margin-bottom:20px">
+                <label for="doctor" style="display:block; font-weight:600; margin-bottom:6px;">Select Doctor *</label>
+                <select name="doctor" id="doctor" required style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px;">
+                    <option value="">-- choose --</option>
+                    {% for doc in doctors %}
+                    <option value="{{ doc.pk }}" {% if user.patient_profile.assigned_doctor and user.patient_profile.assigned_doctor.pk == doc.pk %}selected{% endif %}>
+                        Dr. {{ doc.user.get_full_name }}{% if doc.specialization %} ({{ doc.specialization }}){% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% else %}
+            <div style="margin-bottom:20px;padding:12px;background:#fef3c7;border-left:4px solid #f59e0b;border-radius:6px;">
+                <strong>No doctors available.</strong> Please try again later.
+            </div>
+            {% endif %}
+            
+            <div style="margin-bottom: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <div>
+                    <label for="appointment_date" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                        Date *
+                    </label>
+                    <input type="date" id="appointment_date" name="appointment_date" required 
+                           style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;">
+                </div>
+                <div>
+                    <label for="appointment_time" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                        Time *
+                    </label>
+                    <input type="time" id="appointment_time" name="appointment_time" required 
+                           style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px;">
+                </div>
+            </div>
+
+            <!-- ── FILE UPLOAD ── -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 600;">
+                    Upload X-ray / Report <span style="font-weight:400; color:#64748b;">(optional)</span>
+                </label>
+                <div id="upload-area" style="border: 2px dashed #cbd5e1; border-radius: 8px; padding: 24px; text-align: center; cursor: pointer; background: #f8fafc; transition: all 0.2s;">
+                    <div id="upload-placeholder">
+                        <div style="font-size: 36px; margin-bottom: 8px;">🩻</div>
+                        <p style="margin: 0 0 6px 0; font-weight: 600; color: #334155;">Click to upload or drag & drop</p>
+                        <p style="margin: 0; font-size: 13px; color: #94a3b8;">JPG, PNG, PDF, DICOM — Max 10MB</p>
+                    </div>
+                    <div id="upload-preview" style="display: none;">
+                        <img id="preview-image" src="" alt="Preview" style="max-height: 160px; border-radius: 6px; margin-bottom: 10px; display: none;">
+                        <div id="preview-file-icon" style="font-size: 40px; margin-bottom: 8px; display: none;">📄</div>
+                        <p id="preview-filename" style="margin: 0 0 4px 0; font-weight: 600; color: #334155; font-size: 14px;"></p>
+                        <p id="preview-filesize" style="margin: 0 0 10px 0; font-size: 13px; color: #64748b;"></p>
+                        <button type="button" onclick="clearFile()" style="font-size: 12px; color: #ef4444; background: none; border: none; cursor: pointer; text-decoration: underline;">
+                            Remove file
+                        </button>
+                    </div>
+                    <input type="file" id="report_file" name="report_file"
+                           accept=".jpg,.jpeg,.png,.pdf,.dcm"
+                           style="display: none;">
+                </div>
+                <p style="margin: 6px 0 0 0; font-size: 12px; color: #94a3b8;">
+                    Accepted: X-rays, MRI scans, lab reports, prescriptions, DICOM files.
+                </p>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label for="notes" style="display: block; margin-bottom: 8px; font-weight: 600;">
+                    Additional Notes
+                </label>
+                <textarea id="notes" name="notes" rows="5" 
+                          style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 14px; font-family: inherit; resize: vertical;"></textarea>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 30px;">
+                <button type="submit" class="btn btn-primary" style="flex: 1;">Book Appointment</button>
+                <a href="{% url 'dashboard' %}" class="btn" style="flex: 1; text-align: center;">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .btn {
+        padding: 10px 20px;
+        border: 1px solid #cbd5e1;
+        background-color: #f8fafc;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+        transition: all 0.2s;
+    }
+    .btn:hover:not(:disabled) { background-color: #e2e8f0; }
+    .btn-primary { background-color: #3b82f6; color: white; border-color: #3b82f6; }
+    .btn-primary:hover:not(:disabled) { background-color: #2563eb; border-color: #2563eb; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    input:disabled, textarea:disabled { background-color: #f1f5f9; cursor: not-allowed; }
+    #upload-area:hover { border-color: #3b82f6; background: #eff6ff; }
+    #upload-area.dragover { border-color: #3b82f6; background: #eff6ff; }
+</style>
+
+<script>
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput  = document.getElementById('report_file');
+
+    // Click anywhere on the box to open file picker
+    uploadArea.addEventListener('click', () => fileInput.click());
+
+    // Drag & drop support
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        if (e.dataTransfer.files.length) {
+            fileInput.files = e.dataTransfer.files;
+            handleFile(e.dataTransfer.files[0]);
+        }
+    });
+
+    fileInput.addEventListener('change', () => {
+        if (fileInput.files.length) handleFile(fileInput.files[0]);
+    });
+
+    function handleFile(file) {
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        if (file.size > maxSize) {
+            alert('File is too large. Maximum size is 10MB.');
+            clearFile();
+            return;
+        }
+
+        document.getElementById('upload-placeholder').style.display = 'none';
+        document.getElementById('upload-preview').style.display    = 'block';
+        document.getElementById('preview-filename').textContent     = file.name;
+        document.getElementById('preview-filesize').textContent     = (file.size / 1024).toFixed(1) + ' KB';
+
+        // Show image preview for image files, icon for PDF/DICOM
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('preview-image').src          = e.target.result;
+                document.getElementById('preview-image').style.display = 'block';
+                document.getElementById('preview-file-icon').style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        } else {
+            document.getElementById('preview-image').style.display     = 'none';
+            document.getElementById('preview-file-icon').style.display = 'block';
+            document.getElementById('preview-file-icon').textContent   = file.type === 'application/pdf' ? '📋' : '🩻';
+        }
+    }
+
+    function clearFile() {
+        fileInput.value = '';
+        document.getElementById('upload-placeholder').style.display  = 'block';
+        document.getElementById('upload-preview').style.display      = 'none';
+        document.getElementById('preview-image').src                  = '';
+        document.getElementById('preview-image').style.display        = 'none';
+        document.getElementById('preview-file-icon').style.display    = 'none';
+    }
+</script>
+{% endblock %}

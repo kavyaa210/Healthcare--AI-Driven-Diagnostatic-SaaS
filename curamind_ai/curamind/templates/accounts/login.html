@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block title %}Login{% endblock %}
+{% block extra_css %}
+<style>
+.auth-wrap{min-height:85vh;display:flex;align-items:center;justify-content:center;gap:60px;}
+.auth-left{max-width:400px;}
+.auth-left h2{font-family:'Plus Jakarta Sans',sans-serif;font-size:2rem;font-weight:800;margin-bottom:14px;}
+.auth-left p{color:#64748b;font-size:.95rem;line-height:1.7;margin-bottom:20px;}
+.feature-list{display:flex;flex-direction:column;gap:10px;}
+.feature-item{display:flex;align-items:center;gap:10px;font-size:.88rem;}
+.feature-icon{width:32px;height:32px;border-radius:8px;background:#ede9ff;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.auth-card{background:#fff;border-radius:20px;padding:40px;width:420px;box-shadow:0 10px 40px rgba(108,71,255,.1);border:1px solid #e8e0ff;}
+.auth-card h3{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.4rem;font-weight:800;margin-bottom:6px;}
+.auth-card p{color:#64748b;font-size:.85rem;margin-bottom:28px;}
+</style>
+{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-left">
+    <div style="font-size:3rem;margin-bottom:16px">🏥</div>
+    <h2>CuraMind AI</h2>
+    <p>HIPAA-compliant telehealth platform connecting patients with doctors. All data encrypted, all actions audited.</p>
+    <div class="feature-list">
+      <div class="feature-item"><div class="feature-icon">🏥</div><span><strong>EMR</strong> — Secure medical records</span></div>
+      <div class="feature-item"><div class="feature-icon">🩻</div><span><strong>AI Diagnostics</strong> — CV-assisted MRI/X-Ray</span></div>
+      <div class="feature-item"><div class="feature-icon">📅</div><span><strong>Appointments</strong> — Online & teleconsult</span></div>
+      <div class="feature-item"><div class="feature-icon">📋</div><span><strong>Audit Logs</strong> — Full HIPAA compliance</span></div>
+      <div class="feature-item"><div class="feature-icon">🔒</div><span><strong>RBAC</strong> — Role-based access control</span></div>
+    </div>
+  </div>
+  <div class="auth-card">
+    <h3>Welcome Back 👋</h3>
+    <p>Sign in to your CuraMind account.</p>
+    {% if system_status and not system_status.is_online %}
+    <div class="alert" style="background:#fde68a;color:#92400e;padding:10px;border-radius:6px;margin-bottom:16px">
+        ⚠️ The system is currently <strong>offline</strong>. Only administrators may log in.
+    </div>
+    {% elif system_status and system_status.maintenance_mode %}
+    <div class="alert" style="background:#fde68a;color:#92400e;padding:10px;border-radius:6px;margin-bottom:16px">
+        ⚠️ Maintenance mode is active. Only administrators may log in.
+    </div>
+    {% endif %}
+    <form method="post">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" name="email" class="form-control" placeholder="you@example.com" required autofocus/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" name="password" class="form-control" placeholder="••••••••" required/>
+      </div>
+      <div style="text-align:right;margin-bottom:20px">
+        <a href="{% url 'password_reset' %}" style="font-size:.82rem">Forgot password?</a>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%;padding:13px;font-size:.95rem;justify-content:center">
+        🔐 Login
+      </button>
+    </form>
+    <div style="text-align:center;margin-top:20px;font-size:.85rem;color:#64748b">
+      Don't have an account? <a href="{% url 'register' %}">Create one</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

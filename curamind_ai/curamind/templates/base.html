@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>{% block title %}CuraMind AI{% endblock %}</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@700;800&display=swap');
+:root{--primary:#6c47ff;--bg:#f0f4ff;--card:#fff;--border:#e2e8f0;--text:#1a1f36;--muted:#64748b;--green:#10b981;--red:#ef4444;--yellow:#f59e0b;--blue:#3b82f6;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+a{color:var(--primary);text-decoration:none;}a:hover{text-decoration:underline;}
+nav{background:#fff;border-bottom:1px solid var(--border);padding:14px 32px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 8px rgba(0,0,0,.06);}
+.nav-brand{display:flex;align-items:center;gap:10px;}
+.nav-logo{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--primary),#a855f7);display:flex;align-items:center;justify-content:center;font-size:18px;}
+.nav-brand h1{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.1rem;font-weight:800;color:var(--primary);}
+.nav-brand span{font-size:.7rem;color:var(--muted);display:block;}
+.nav-links{display:flex;align-items:center;gap:20px;}
+.nav-links a{color:var(--muted);font-size:.88rem;font-weight:500;}
+.nav-links a:hover{color:var(--primary);text-decoration:none;}
+.nav-user{display:flex;align-items:center;gap:10px;}
+.avatar{width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;}
+.badge-role{font-size:.65rem;padding:3px 10px;border-radius:20px;font-weight:700;text-transform:uppercase;}
+.role-PATIENT{background:#e0f2fe;color:#0369a1;}.role-DOCTOR{background:#d1fae5;color:#065f46;}.role-NURSE{background:#fef3c7;color:#92400e;}.role-ADMIN{background:#fce7f3;color:#9d174d;}
+.container{max-width:1200px;margin:0 auto;padding:32px 24px;}
+.messages{margin-bottom:20px;}
+.msg{padding:12px 18px;border-radius:10px;font-size:.88rem;margin-bottom:8px;display:flex;align-items:center;gap:10px;border-left:4px solid;}
+.msg.success{background:#d1fae5;border-color:var(--green);color:#065f46;}
+.msg.error{background:#fee2e2;border-color:var(--red);color:#991b1b;}
+.msg.info{background:#dbeafe;border-color:var(--blue);color:#1e40af;}
+.msg.warning{background:#fef3c7;border-color:var(--yellow);color:#92400e;}
+.card{background:#fff;border-radius:16px;border:1px solid var(--border);padding:28px;box-shadow:0 2px 12px rgba(0,0,0,.05);}
+.btn{padding:11px 24px;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer;border:none;transition:all .2s;display:inline-flex;align-items:center;gap:8px;font-family:'Inter',sans-serif;}
+.btn-primary{background:var(--primary);color:#fff;}.btn-primary:hover{opacity:.9;box-shadow:0 4px 14px rgba(108,71,255,.3);}
+.btn-outline{background:#fff;border:1.5px solid var(--border);color:var(--text);}.btn-outline:hover{border-color:var(--primary);color:var(--primary);}
+.form-group{margin-bottom:18px;}
+.form-group label{display:block;font-size:.85rem;font-weight:600;margin-bottom:6px;}
+.form-control{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:.9rem;font-family:'Inter',sans-serif;transition:border-color .2s;background:#fff;}
+.form-control:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(108,71,255,.1);}
+footer{text-align:center;padding:24px;color:var(--muted);font-size:.78rem;border-top:1px solid var(--border);margin-top:40px;}
+</style>
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+{% if system_status and user.is_authenticated and user.is_admin %}
+  {% if not system_status.is_online or system_status.maintenance_mode %}
+  <div style="background:#fde68a;color:#92400e;text-align:center;padding:8px;font-weight:600;">
+      ⚠️ Platform {% if not system_status.is_online %}offline{% else %}under maintenance{% endif %} – only administrators can access.
+  </div>
+  {% endif %}
+{% endif %}
+{% if user.is_authenticated %}
+<nav>
+  <div class="nav-brand">
+    <div class="nav-logo">🏥</div>
+    <div><h1>CuraMind AI</h1><span>HIPAA-Compliant Telehealth</span></div>
+  </div>
+  <div class="nav-links">
+    <a href="{% url 'dashboard' %}">🏠 Dashboard</a>
+    {% if user.is_patient %}<a href="#">📅 Appointments</a><a href="#">📋 My Records</a>{% endif %}
+    {% if user.is_doctor %}<a href="#">👥 Patients</a><a href="#">📅 Schedule</a>{% endif %}
+    {% if user.is_admin %}<a href="/admin/">⚙ Admin</a>{% endif %}
+  </div>
+  <div class="nav-user">
+    <div class="avatar">{{ user.first_name.0 }}{{ user.last_name.0 }}</div>
+    <div>
+      <div style="font-size:.85rem;font-weight:600">{{ user.get_full_name }}</div>
+      <span class="badge-role role-{{ user.role }}">{{ user.role }}</span>
+    </div>
+    <a href="{% url 'logout' %}" class="btn btn-outline" style="padding:7px 16px;font-size:.8rem">Logout</a>
+  </div>
+</nav>
+{% endif %}
+<div class="container">
+  {% if messages %}
+  <div class="messages">
+    {% for message in messages %}
+    <div class="msg {{ message.tags }}">
+      {% if message.tags == 'success' %}✅{% elif message.tags == 'error' %}❌{% elif message.tags == 'warning' %}⚠️{% else %}ℹ️{% endif %}
+      {{ message }}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% block content %}{% endblock %}
+</div>
+<footer>🔒 CuraMind AI — HIPAA-Compliant Telehealth & Diagnostics Platform | Zaalima Development Pvt. Ltd</footer>
+</body>
+</html>

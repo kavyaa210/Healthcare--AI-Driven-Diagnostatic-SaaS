@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}System Unavailable{% endblock %}
+
+{% block content %}
+<div style="min-height:70vh;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:40px;">
+    <h1>⚠️ System Unavailable</h1>
+    {% if status and not status.is_online %}
+        <p>The CuraMind platform is currently <strong>offline</strong>. Please check back later.
+        If you are an administrator, you may still <a href="{% url 'login' %}">log in</a>.</p>
+    {% elif status and status.maintenance_mode %}
+        <p>The system is under <strong>maintenance</strong>. Only administrators can access the platform during this period.
+        Please try again shortly.</p>
+    {% else %}
+        <p>The system is temporarily unavailable. Please try again later.</p>
+    {% endif %}
+</div>
+{% endblock %}

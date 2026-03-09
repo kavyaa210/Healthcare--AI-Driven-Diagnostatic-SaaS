@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block extra_css %}
+<style>
+.dash-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+.kpi{background:#fff;border-radius:14px;padding:20px 22px;border:1px solid #e2e8f0;box-shadow:0 2px 8px rgba(0,0,0,.04);}
+.kpi label{font-size:.72rem;text-transform:uppercase;letter-spacing:1px;color:#64748b;font-weight:600;}
+.kpi .num{font-family:'Plus Jakarta Sans',sans-serif;font-size:2rem;font-weight:800;margin:6px 0 4px;}
+.kpi .sub{font-size:.75rem;color:#94a3b8;}
+.kpi.c1 .num{color:#6c47ff}.kpi.c2 .num{color:#10b981}.kpi.c3 .num{color:#f59e0b}.kpi.c4 .num{color:#3b82f6}
+.welcome-banner{background:linear-gradient(135deg,#6c47ff,#a855f7);border-radius:16px;padding:28px 32px;color:#fff;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;}
+.welcome-banner h2{font-family:'Plus Jakarta Sans',sans-serif;font-size:1.4rem;font-weight:800;}
+.welcome-banner p{opacity:.85;font-size:.9rem;margin-top:4px;}
+.hipaa-badge{background:rgba(255,255,255,.2);padding:8px 16px;border-radius:20px;font-size:.78rem;font-weight:700;}
+.two-col{display:grid;grid-template-columns:2fr 1fr;gap:20px;}
+.section-title{font-family:'Plus Jakarta Sans',sans-serif;font-size:1rem;font-weight:800;margin-bottom:16px;}
+.table{width:100%;border-collapse:collapse;}
+.table th{padding:10px 14px;font-size:.78rem;text-transform:uppercase;letter-spacing:.5px;color:#64748b;border-bottom:2px solid #f1f5f9;text-align:left;}
+.table td{padding:12px 14px;font-size:.88rem;border-bottom:1px solid #f8fafc;}
+.status-badge{padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700;}
+.status-SCHEDULED{background:#dbeafe;color:#1e40af}.status-CONFIRMED{background:#d1fae5;color:#065f46}.status-COMPLETED{background:#f0fdf4;color:#166534}.status-CANCELLED{background:#fee2e2;color:#991b1b}
+</style>
+{% endblock %}
+{% block content %}
+<div class="welcome-banner">
+  <div>
+    <h2>Welcome, {{ user.first_name }}! 👋</h2>
+    <p>{{ user.role }} Portal — CuraMind AI Telehealth Platform</p>
+  </div>
+  <div class="hipaa-badge">🔒 HIPAA Compliant</div>
+</div>
+
+<div class="dash-grid">
+  {% if user.is_patient %}
+  <div class="kpi c1"><label>Appointments</label><div class="num">{{ appointments.count|default:"0" }}</div><div class="sub">scheduled</div></div>
+  <div class="kpi c2"><label>Medical Records</label><div class="num">{{ records.count|default:"0" }}</div><div class="sub">on file</div></div>
+  <div class="kpi c3"><label>Upcoming</label><div class="num">{{ appointments|length|default:"0" }}</div><div class="sub">this week</div></div>
+  <div class="kpi c4"><label>My Doctor</label><div class="num">1</div><div class="sub">assigned</div></div>
+  {% elif user.is_doctor %}
+  <div class="kpi c1"><label>Total Patients</label><div class="num">{{ patient_count|default:"0" }}</div><div class="sub">assigned</div></div>
+  <div class="kpi c2"><label>Appointments</label><div class="num">{{ appointments.count|default:"0" }}</div><div class="sub">upcoming</div></div>
+  <div class="kpi c3"><label>DICOM Review</label><div class="num">3</div><div class="sub">pending</div></div>
+  <div class="kpi c4"><label>Today</label><div class="num">5</div><div class="sub">consultations</div></div>
+  {% elif user.is_admin %}
+  <div class="kpi c1"><label>Total Users</label><div class="num">—</div><div class="sub">platform</div></div>
+  <div class="kpi c2"><label>Appointments</label><div class="num">—</div><div class="sub">today</div></div>
+  <div class="kpi c3"><label>Audit Logs</label><div class="num">—</div><div class="sub">entries</div></div>
+  <div class="kpi c4"><label>System</label><div class="num">
+      {% if system_status.is_online and not system_status.maintenance_mode %}✅
+      {% else %}⚠️{% endif %}
+    </div><div class="sub">
+      {% if not system_status.is_online %}offline
+      {% elif system_status.maintenance_mode %}maintenance
+      {% else %}healthy{% endif %}
+    </div></div>
+  {% else %}
+  <div class="kpi c1"><label>Status</label><div class="num">—</div><div class="sub">n/a</div></div>
+  {% endif %}
+</div>
+
+<div class="two-col">
+  <div class="card">
+    <div class="section-title">📅 Recent Appointments</div>
+    {% if appointments %}
+    <table class="table">
+      <thead><tr><th>Patient/Doctor</th><th>Date & Time</th><th>Type</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for appt in appointments %}
+      <tr>
+        <td>{% if user.is_patient %}
+            {% if appt.doctor %}
+            Dr. {{ appt.doctor.user.get_full_name }}
+            {% if appt.doctor.specialization %}<br><span style="font-size:.75rem;color:#64748b;">{{ appt.doctor.specialization }}</span>{% endif %}
+            {% else %}
+            <span style="color:#94a3b8;">Not assigned</span>
+            {% endif %}
+            {% else %}{{ appt.patient.get_full_name }}{% endif %}</td>
+        <td>{{ appt.scheduled_at|date:"d M Y, H:i" }}</td>
+        <td>🏥 In-Person</td>
+        <td><span class="status-badge status-{{ appt.status }}">{{ appt.status }}</span></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="text-align:center;padding:30px;color:#94a3b8;font-size:.9rem">📅 No appointments yet.</div>
+    {% endif %}
+  </div>
+
+  <div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="section-title">⚡ Quick Actions</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        {% if user.is_patient %}
+        <a href="{% url 'appointments:book_appointment' %}" class="btn btn-primary" style="justify-content:center">📅 Book Appointment</a>
+        <a href="#" class="btn btn-outline" style="justify-content:center">📋 View My Records</a>
+        <a href="#" class="btn btn-outline" style="justify-content:center">🩺 Upload Medical Image</a>
+        {% elif user.is_doctor %}
+        <a href="#" class="btn btn-primary" style="justify-content:center">👥 View Patients</a>
+        <a href="#" class="btn btn-outline" style="justify-content:center">📝 Write Prescription</a>
+        <a href="#" class="btn btn-outline" style="justify-content:center">🩻 Review DICOM Images</a>
+        {% endif %}
+        {% if user.is_admin %}
+        <a href="{% url 'admin_panel' %}" class="btn btn-outline" style="justify-content:center">⚙ Admin Panel</a>
+        {% endif %}
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">🔒 Security Status</div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:.82rem">
+        <div style="display:flex;justify-content:space-between"><span>Session</span><span style="color:#10b981;font-weight:700">✅ Active</span></div>
+        <div style="display:flex;justify-content:space-between"><span>Role</span><span style="color:#6c47ff;font-weight:700">{{ user.role }}</span></div>
+        <div style="display:flex;justify-content:space-between"><span>HIPAA</span><span style="color:#10b981;font-weight:700">✅ Compliant</span></div>
+        <div style="display:flex;justify-content:space-between"><span>Data Encrypted</span><span style="color:#10b981;font-weight:700">✅ Yes</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

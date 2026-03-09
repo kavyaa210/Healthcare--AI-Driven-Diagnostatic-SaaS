@@ -1,0 +1,68 @@
+/* CuraMind custom admin styles */
+/* Modern card look for admin boxes */
+body#dashboard {
+  background: linear-gradient(180deg,#f8fafc 0%, #f0f4ff 100%);
+}
+
+.module, .app-module, .dashboard-module, .change-list, .change-form {
+  background: #fff;
+  border: 1px solid #e6e9ef;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(20,20,40,0.06);
+  padding: 18px;
+}
+
+.module h2, .app-module h2 {
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.module p, .app-module p, .module ul, .app-module ul {
+  color: #475569;
+}
+
+.submit-row .default, .object-tools .addlink {
+  background: linear-gradient(90deg,#6c47ff,#a855f7);
+  color: #fff !important;
+  border: none !important;
+  padding: 8px 14px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 6px 14px rgba(108,71,255,0.18);
+}
+
+.submit-row .default:hover, .object-tools .addlink:hover {
+  opacity: .95;
+}
+
+.breadcrumbs {
+  background: transparent;
+  padding: 0 0 12px 0;
+}
+
+.module th {
+  background: transparent;
+  color: #0f172a;
+}
+
+/* Improve form inputs */
+input, select, textarea {
+  border-radius: 8px !important;
+  border: 1px solid #e6e9ef !important;
+  padding: 8px !important;
+}
+
+/* Make the change-list rows a little nicer */
+tr.row1, tr.row2 {
+  background: transparent;
+}
+
+/* Compact the admin header */
+#header {
+  background: #fff;
+  border-bottom: 1px solid #eef2ff;
+}
+
+/* Footer subtle */
+#footer {
+  color: #94a3b8;
+}
